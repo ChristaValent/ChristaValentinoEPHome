@@ -9,6 +9,14 @@ namespace Domain.Models
 {
     public class Poll
     {
+        public Poll()
+        {
+            DateCreated = DateTime.Now;
+            Option1VotesCount = 0;
+            Option2VotesCount = 0;
+            Option3VotesCount = 0;
+        }
+
         [Key]
         public int Id { get; set; }
 
@@ -20,13 +28,13 @@ namespace Domain.Models
 
         public string Option3Text { get; set; }
 
-        public int Option1Votes { get; set; }
+        public int Option1VotesCount { get; set; }
 
-        public int Option2Votes { get; set; }
+        public int Option2VotesCount { get; set; }
 
-        public int Option3Votes { get; set; }
+        public int Option3VotesCount { get; set; }
 
-        public DateTime CreatedAt { get; set; }
+        public DateTime DateCreated { get; set; }
 
     }
 }

@@ -19,7 +19,7 @@ namespace DataAccess.Repositories
 
         public void CreatePoll(Poll poll)
         {
-            poll.CreatedAt = DateTime.Now;
+            poll.DateCreated = DateTime.Now;
             _pollContext.Polls.Add(poll);
             _pollContext.SaveChanges();
         }
@@ -32,6 +32,27 @@ namespace DataAccess.Repositories
         public IQueryable<Poll> GetPolls()
         {
             return _pollContext.Polls;
+        }
+
+        public void Vote(int pollId, int option)
+        {
+            var poll = _pollContext.Polls.FirstOrDefault(p => p.Id == pollId);
+            if (poll != null)
+            {
+                switch (option)
+                {
+                    case 1:
+                        poll.Option1VotesCount++;
+                        break;
+                    case 2:
+                        poll.Option2VotesCount++;
+                        break;
+                    case 3:
+                        poll.Option3VotesCount++;
+                        break;
+                }
+                _pollContext.SaveChanges();
+            }
         }
 
     }
