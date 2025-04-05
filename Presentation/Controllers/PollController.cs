@@ -1,5 +1,8 @@
-﻿using DataAccess.Repositories;
+﻿using DataAccess.DataContext;
+using DataAccess.Repositories;
 using Domain.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Presentation.Models;
 
@@ -7,36 +10,23 @@ namespace Presentation.Controllers
 {
     public class PollController : Controller
     {
-        PollRepository _pollRepository;
-
-        public PollController(PollRepository pollRepository)
+        public IActionResult Index([FromServices] PollRepository pollRepository)
         {
-            _pollRepository = pollRepository;
-        }
+            var polls = pollRepository.GetPolls().OrderByDescending(p => p.DateCreated).ToList();
 
-        public IActionResult Index()
-        {
-            var polls = _pollRepository.GetPolls().OrderByDescending(p => p.DateCreated).ToList();
-
-            //var pollListViewModel = polls.Select(p => new PollListViewModel
-            //{
-            //    Title = p.Title,
-            //    Option1Text = p.Option1Text,l-ammont ta 
-            //    Option2Text = p.Option2Text,
-            //    Option3Text = p.Option3Text,
-            //    CreatedAt = p.CreatedAt
-            //}).ToList();
             return View(polls);
         }
 
+        [Authorize]
         [HttpGet]
         public IActionResult CreatePoll()
         {
             return View();
         }
 
+        [Authorize]
         [HttpPost]
-        public IActionResult CreatePoll(CreatePollViewModel model)
+        public IActionResult CreatePoll(CreatePollViewModel model, [FromServices] PollRepository pollRepository)
         {
             if (ModelState.IsValid)
             {
@@ -48,10 +38,48 @@ namespace Presentation.Controllers
                     Option3Text = model.Option3Text,
                     DateCreated = DateTime.Now
                 };
-                _pollRepository.CreatePoll(poll);
+                pollRepository.CreatePoll(poll);
                 return RedirectToAction("Index");
             }
             return View(model);
         }
+
+        [Authorize]
+        [HttpGet]
+        public IActionResult Vote(int pollId, [FromServices] PollRepository pollRepository)
+        {
+            var poll = pollRepository.GetPolls().FirstOrDefault(p => p.Id == pollId);
+            if (poll == null)
+            {
+                return RedirectToAction("Index");
+            }
+
+            return View(poll);
+        }
+
+        [Authorize]
+        [HttpPost]
+        public IActionResult Vote(int pollId, int option, [FromServices] PollRepository pollRepository, [FromServices] VoteRepository voteRepository, [FromServices] UserManager<IdentityUser> user)
+        {
+            if(option >= 1)
+            {
+                var hasVotedSuccessfully = pollRepository.Vote(pollId, option);
+                if (hasVotedSuccessfully)
+                {
+                    var vote = new Vote()
+                    {
+                        PollId = pollId,
+                        VoterId = user.GetUserId(User),
+                        VotedAt = DateTime.Now
+                    };
+                    voteRepository.CreateVote(vote);
+                    return RedirectToAction("Index");
+                }
+                return RedirectToAction("Index");
+            }
+            
+            return RedirectToAction("Index");
+        }
+
     }
 }

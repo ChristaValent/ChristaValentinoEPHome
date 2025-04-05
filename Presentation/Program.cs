@@ -24,6 +24,7 @@ public class Program
         builder.Services.AddControllersWithViews();
 
         builder.Services.AddScoped<PollRepository>();
+        builder.Services.AddScoped<VoteRepository>();
 
         var app = builder.Build();
 

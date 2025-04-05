@@ -34,9 +34,10 @@ namespace DataAccess.Repositories
             return _pollContext.Polls;
         }
 
-        public void Vote(int pollId, int option)
+        public bool Vote(int pollId, int option)
         {
-            var poll = _pollContext.Polls.FirstOrDefault(p => p.Id == pollId);
+            var poll = GetPoll(pollId);
+
             if (poll != null)
             {
                 switch (option)
@@ -52,7 +53,9 @@ namespace DataAccess.Repositories
                         break;
                 }
                 _pollContext.SaveChanges();
+                return true;
             }
+            return false;
         }
 
     }

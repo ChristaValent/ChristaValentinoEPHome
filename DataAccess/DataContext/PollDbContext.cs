@@ -16,6 +16,7 @@ namespace DataAccess.DataContext
         public PollDbContext(DbContextOptions<PollDbContext> options) : base(options) { }
 
         public DbSet<Poll> Polls { get; set; }
+        public DbSet<Vote> Votes { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
