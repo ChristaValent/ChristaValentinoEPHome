@@ -26,6 +26,18 @@ public class Program
         builder.Services.AddScoped<PollRepository>();
         builder.Services.AddScoped<VoteRepository>();
 
+        bool pollsSettings = builder.Configuration.GetValue<bool>("PollsSettings");
+
+        //if true use file repository, else use database repository
+        if (pollsSettings)
+        {
+           builder.Services.AddScoped<IPollRepository, PollFileRepository>();
+        }
+        else
+        {
+            builder.Services.AddScoped<IPollRepository, PollRepository>();
+        }
+
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.

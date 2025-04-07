@@ -4,13 +4,14 @@ using Domain.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Presentation.ActionFilter;
 using Presentation.Models;
 
 namespace Presentation.Controllers
 {
     public class PollController : Controller
     {
-        public IActionResult Index([FromServices] PollRepository pollRepository)
+        public IActionResult Index([FromServices] IPollRepository pollRepository)
         {
             var polls = pollRepository.GetPolls().OrderByDescending(p => p.DateCreated).ToList();
 
@@ -26,7 +27,7 @@ namespace Presentation.Controllers
 
         [Authorize]
         [HttpPost]
-        public IActionResult CreatePoll(CreatePollViewModel model, [FromServices] PollRepository pollRepository)
+        public IActionResult CreatePoll(CreatePollViewModel model, [FromServices] IPollRepository pollRepository)
         {
             if (ModelState.IsValid)
             {
@@ -46,6 +47,7 @@ namespace Presentation.Controllers
 
         [Authorize]
         [HttpGet]
+        [PollActionFilter]
         public IActionResult Vote(int pollId, [FromServices] PollRepository pollRepository)
         {
             var poll = pollRepository.GetPolls().FirstOrDefault(p => p.Id == pollId);
@@ -59,6 +61,7 @@ namespace Presentation.Controllers
 
         [Authorize]
         [HttpPost]
+        [PollActionFilter]
         public IActionResult Vote(int pollId, int option, [FromServices] PollRepository pollRepository, [FromServices] VoteRepository voteRepository, [FromServices] UserManager<IdentityUser> user)
         {
             if(option >= 1)
