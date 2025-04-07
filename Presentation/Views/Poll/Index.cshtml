@@ -1,10 +1,16 @@
-﻿@model IEnumerable<Domain.Models.Poll>
+﻿@using Domain.Models
+@model List<Poll>
 
 @{
     ViewData["Title"] = "List";
 }
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-<h1>List</h1>
+<div class="d-flex justify-content-between align-items-start">
+    <h1>List</h1>
+    <a href="/Poll/CreatePoll" class="btn btn-primary mt-2">Add Poll</a>
+</div>
+
 
 
 <div class="row">
@@ -18,10 +24,60 @@
                         Created: @poll.DateCreated.ToString("dd MMM yyyy")<br />
                     </p>
                     <a href="/Poll/Vote?pollId=@poll.Id" class="btn btn-primary">Vote</a>
-                    &nbsp
-                    <a href="/Poll/Results?pollId=@poll.Id" class="btn btn-primary">Results</a>
+                    <br><br>
+                    <label class="d-block text-center">Results</label>
+                    <div class="d-flex justify-content-center" style="height: 300px;">
+                        <canvas id="voteChart-@poll.Id" width="250" height="250" class="d-block"></canvas>
+                    </div>
+
                 </div>
             </div>
         </div>
     }
 </div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        var polls = @Html.Raw(Json.Serialize(Model));
+
+        polls.forEach(poll => {
+            var ctx = document.getElementById(`voteChart-${poll.id}`);
+
+            if (!ctx) return;
+
+            var totalVotes = poll.option1VotesCount + poll.option2VotesCount + poll.option3VotesCount;
+
+            if (totalVotes === 0) {
+                // Show a "No votes yet" message instead of a chart
+                ctx.parentElement.innerHTML = `<p class="text-center text-muted">No votes yet</p>`;
+            } else {
+                new Chart(ctx.getContext('2d'), {
+                    type: 'pie',
+                    data: {
+                        labels: [poll.option1Text, poll.option2Text, poll.option3Text],
+                        datasets: [{
+                            data: [poll.option1VotesCount, poll.option2VotesCount, poll.option3VotesCount],
+                            backgroundColor: [
+                                'rgb(61, 4, 89, 0.7)',
+                                'rgba(111, 0, 255, 0.7)',
+                                'rgba(9, 31, 146, 0.7)'
+                            ],
+                            borderColor: [
+                                'rgb(61, 4, 89, 1)',
+                                'rgba(111, 0, 255, 1)',
+                                'rgba(9, 31, 146, 1)'
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        aspectRatio: 1
+                    }
+                });
+                
+            }
+
+        });
+    });
+</script>
